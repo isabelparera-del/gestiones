@@ -1,0 +1,23 @@
+{
+  "name": "Mis Gestiones",
+  "short_name": "Gestiones",
+  "description": "Gestor personal de gestiones y trámites en formato Kanban",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231a1a2e'/%3E%3Crect x='28' y='56' width='44' height='80' rx='6' fill='%23e8c07d'/%3E%3Crect x='82' y='40' width='44' height='96' rx='6' fill='%2397c459'/%3E%3Crect x='136' y='68' width='44' height='68' rx='6' fill='%235dcaa5'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%231a1a2e'/%3E%3Crect x='72' y='148' width='116' height='216' rx='14' fill='%23e8c07d'/%3E%3Crect x='218' y='108' width='116' height='256' rx='14' fill='%2397c459'/%3E%3Crect x='364' y='180' width='116' height='184' rx='14' fill='%235dcaa5'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

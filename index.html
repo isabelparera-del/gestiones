@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Gestiones</title>
+<meta name="description" content="Gestor personal de gestiones y trámites">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gestiones">
+<link rel="manifest" href="manifest.json">
+
+<!-- Icono SVG inline para Apple (generado como data URI) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231a1a2e'/%3E%3Crect x='28' y='56' width='44' height='80' rx='6' fill='%23e8c07d'/%3E%3Crect x='82' y='40' width='44' height='96' rx='6' fill='%2397c459'/%3E%3Crect x='136' y='68' width='44' height='68' rx='6' fill='%235dcaa5'/%3E%3C/svg%3E">
+
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --bg2: #1a1a2e;
+    --bg3: #16213e;
+    --surface: #1e1e35;
+    --surface2: #252545;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #e8e8f0;
+    --text2: #9090b0;
+    --text3: #5a5a7a;
+    --amber: #e8c07d;
+    --amber-bg: rgba(232,192,125,0.12);
+    --blue: #7eb8f7;
+    --blue-bg: rgba(126,184,247,0.12);
+    --green: #97c459;
+    --green-bg: rgba(151,196,89,0.12);
+    --teal: #5dcaa5;
+    --teal-bg: rgba(93,202,165,0.12);
+    --pink: #e88fa0;
+    --pink-bg: rgba(232,143,160,0.12);
+    --purple: #a78bfa;
+    --purple-bg: rgba(167,139,250,0.12);
+    --red: #f07070;
+    --red-bg: rgba(240,112,112,0.12);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Header */
+  .appbar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.25rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .appbar-left { display: flex; align-items: center; gap: 10px; }
+  .app-icon {
+    width: 28px; height: 28px;
+    background: var(--amber);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .app-name { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+  .app-version { font-size: 11px; color: var(--text3); margin-left: 4px; }
+
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .savebadge {
+    font-size: 11px; padding: 3px 9px;
+    border-radius: 20px; display: none;
+    font-weight: 500;
+  }
+  .savebadge.ok { display: inline-block; background: var(--green-bg); color: var(--green); }
+  .savebadge.err { display: inline-block; background: var(--red-bg); color: var(--red); }
+
+  /* Filtros */
+  .filters-bar {
+    padding: .75rem 1.25rem;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .fbtn {
+    font-size: 12px; padding: 4px 11px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .fbtn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+  .fbtn.on { background: var(--surface2); color: var(--text); border-color: rgba(255,255,255,0.25); }
+  .addbtn {
+    margin-left: auto;
+    font-size: 13px; padding: 5px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--amber);
+    background: var(--amber-bg);
+    color: var(--amber);
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .addbtn:hover { background: rgba(232,192,125,0.2); }
+
+  /* Stats */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: .75rem 1.25rem;
+    background: var(--bg);
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat-num { font-size: 22px; font-weight: 700; letter-spacing: -1px; }
+  .stat-label { font-size: 11px; color: var(--text2); margin-top: 1px; }
+  .sn-pend { color: var(--amber); }
+  .sn-prog { color: var(--blue); }
+  .sn-done { color: var(--green); }
+
+  /* Board */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    padding: 0 1.25rem 1.5rem;
+  }
+  .col-wrap { min-width: 0; }
+  .col-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .6rem 0 .5rem;
+  }
+  .col-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .6px; color: var(--text2);
+  }
+  .col-count {
+    font-size: 11px; padding: 2px 7px;
+    border-radius: 20px; font-weight: 600;
+  }
+  .cc-p { background: var(--amber-bg); color: var(--amber); }
+  .cc-i { background: var(--blue-bg); color: var(--blue); }
+  .cc-d { background: var(--green-bg); color: var(--green); }
+
+  .col-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 8px;
+    min-height: 80px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 11px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    transition: border-color .15s, transform .1s;
+  }
+  .card:last-child { margin-bottom: 0; }
+  .card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .card-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 6px; margin-bottom: 5px;
+  }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4; }
+  .catbadge {
+    font-size: 10px; padding: 2px 7px;
+    border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+    font-weight: 600;
+  }
+  .cb-lab { background: var(--pink-bg); color: var(--pink); }
+  .cb-adm { background: var(--purple-bg); color: var(--purple); }
+  .cb-ter { background: var(--teal-bg); color: var(--teal); }
+  .card-notes {
+    font-size: 11px; color: var(--text2);
+    margin-bottom: 6px; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card-foot {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 4px;
+  }
+  .cdate { font-size: 11px; color: var(--text3); }
+  .dw { color: var(--amber); font-weight: 600; }
+  .do { color: var(--red); font-weight: 600; }
+  .mvs { display: flex; gap: 3px; }
+  .mv {
+    font-size: 10px; padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer; font-family: inherit;
+    transition: all .12s;
+  }
+  .mv:hover { background: var(--surface2); color: var(--text); }
+  .empty-col {
+    text-align: center; padding: 1.5rem .5rem;
+    font-size: 12px; color: var(--text3);
+    line-height: 1.6;
+  }
+
+  /* Modal */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 100; align-items: center; justify-content: center;
+    padding: 1rem;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    width: min(420px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h3 {
+    font-size: 15px; font-weight: 600;
+    margin-bottom: 1rem; color: var(--text);
+  }
+  .frow { margin-bottom: 11px; }
+  .frow label {
+    display: block; font-size: 11px;
+    color: var(--text2); margin-bottom: 4px;
+    text-transform: uppercase; letter-spacing: .5px; font-weight: 600;
+  }
+  .frow input, .frow select, .frow textarea {
+    width: 100%; padding: 8px 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .frow input:focus, .frow select:focus, .frow textarea:focus {
+    border-color: var(--amber);
+  }
+  .frow select option { background: var(--bg2); }
+  .frow textarea { resize: vertical; min-height: 64px; }
+  .mbtns {
+    display: flex; justify-content: flex-end;
+    gap: 7px; margin-top: 14px; align-items: center;
+  }
+  .bcn {
+    font-size: 13px; padding: 6px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: transparent; color: var(--text2);
+    cursor: pointer; font-family: inherit;
+  }
+  .bcn:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+  .bsv {
+    font-size: 13px; padding: 6px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--amber);
+    background: var(--amber-bg); color: var(--amber);
+    cursor: pointer; font-weight: 600; font-family: inherit;
+    transition: all .15s;
+  }
+  .bsv:hover { background: rgba(232,192,125,0.25); }
+  .bdl {
+    font-size: 13px; padding: 6px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--red-bg);
+    background: transparent; color: var(--red);
+    cursor: pointer; margin-right: auto; font-family: inherit;
+    transition: all .15s;
+  }
+  .bdl:hover { background: var(--red-bg); }
+
+  /* PWA install bar */
+  .pwa-bar {
+    display: none;
+    align-items: center; justify-content: space-between;
+    gap: 8px; padding: 8px 1.25rem;
+    background: var(--teal-bg);
+    border-bottom: 1px solid rgba(93,202,165,0.2);
+    font-size: 12px; color: var(--teal);
+  }
+  .pwa-bar.show { display: flex; }
+  .pwa-ibtn {
+    font-size: 12px; padding: 4px 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--teal);
+    background: transparent; color: var(--teal);
+    cursor: pointer; font-weight: 600; font-family: inherit;
+    white-space: nowrap;
+  }
+  .pwa-ibtn:hover { background: rgba(93,202,165,0.15); }
+  .pwa-close {
+    background: none; border: none;
+    color: var(--teal); cursor: pointer; font-size: 16px;
+    line-height: 1; padding: 0 2px;
+  }
+
+  @media (max-width: 560px) {
+    .board { grid-template-columns: 1fr; padding: 0 .75rem 1.5rem; }
+    .stats-bar { padding: .75rem; gap: 6px; }
+    .filters-bar { padding: .6rem .75rem; }
+    .appbar { padding: 0 .75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="pwa-bar" class="pwa-bar">
+  <span>Instala esta app en tu dispositivo para acceso rápido</span>
+  <button class="pwa-ibtn" id="pwa-btn">Instalar</button>
+  <button class="pwa-close" onclick="document.getElementById('pwa-bar').classList.remove('show')">✕</button>
+</div>
+
+<div class="appbar">
+  <div class="appbar-left">
+    <div class="app-icon">📋</div>
+    <span class="app-name">Mis Gestiones</span>
+  </div>
+  <div class="header-actions">
+    <span class="savebadge" id="sb"></span>
+  </div>
+</div>
+
+<div class="filters-bar">
+  <button class="fbtn on" onclick="filt('all')">Todas</button>
+  <button class="fbtn" onclick="filt('lab')">Laboral</button>
+  <button class="fbtn" onclick="filt('adm')">Administrativo</button>
+  <button class="fbtn" onclick="filt('ter')">Terceros</button>
+  <button class="addbtn" onclick="openM()">+ Nueva gestión</button>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-card"><div class="stat-num sn-pend" id="sn-p">0</div><div class="stat-label">Pendiente</div></div>
+  <div class="stat-card"><div class="stat-num sn-prog" id="sn-i">0</div><div class="stat-label">En curso</div></div>
+  <div class="stat-card"><div class="stat-num sn-done" id="sn-d">0</div><div class="stat-label">Hecho</div></div>
+</div>
+
+<div class="board">
+  <div class="col-wrap">
+    <div class="col-head"><span class="col-label">Pendiente</span><span class="col-count cc-p" id="cp">0</span></div>
+    <div class="col-body" id="colp"></div>
+  </div>
+  <div class="col-wrap">
+    <div class="col-head"><span class="col-label">En curso</span><span class="col-count cc-i" id="ci">0</span></div>
+    <div class="col-body" id="coli"></div>
+  </div>
+  <div class="col-wrap">
+    <div class="col-head"><span class="col-label">Hecho</span><span class="col-count cc-d" id="cd">0</span></div>
+    <div class="col-body" id="cold"></div>
+  </div>
+</div>
+
+<div class="overlay" id="ov">
+  <div class="modal">
+    <h3 id="mtitle">Nueva gestión</h3>
+    <div class="frow"><label>Título</label><input id="ft" type="text" placeholder="Descripción breve de la gestión"></div>
+    <div class="frow"><label>Categoría</label>
+      <select id="fc">
+        <option value="lab">Laboral / profesional</option>
+        <option value="adm">Trámite administrativo</option>
+        <option value="ter">Seguimiento de terceros</option>
+      </select>
+    </div>
+    <div class="frow"><label>Estado</label>
+      <select id="fs">
+        <option value="pend">Pendiente</option>
+        <option value="prog">En curso</option>
+        <option value="done">Hecho</option>
+      </select>
+    </div>
+    <div class="frow"><label>Fecha límite</label><input id="fd" type="date"></div>
+    <div class="frow"><label>Notas / contexto</label><textarea id="fn" placeholder="Detalles, contacto, próximo paso..."></textarea></div>
+    <div class="mbtns">
+      <button class="bdl" id="bdl" onclick="delCard()" style="display:none">Eliminar</button>
+      <button class="bcn" onclick="closeM()">Cancelar</button>
+      <button class="bsv" onclick="saveCard()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CAT = {
+  lab: { l: 'Laboral', c: 'cb-lab' },
+  adm: { l: 'Administrativo', c: 'cb-adm' },
+  ter: { l: 'Terceros', c: 'cb-ter' }
+};
+let T = [], nid = 1, eid = null, af = 'all', stimer = null, deferredPrompt = null;
+const $ = id => document.getElementById(id);
+
+function td() { return new Date().toISOString().split('T')[0]; }
+function dc(d) {
+  if (!d) return '';
+  const df = (new Date(d) - new Date(td())) / 86400000;
+  return df < 0 ? 'do' : df <= 5 ? 'dw' : '';
+}
+function fd(d) {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+
+function showBadge(ok, msg) {
+  const el = $('sb');
+  el.className = 'savebadge ' + (ok ? 'ok' : 'err');
+  el.textContent = msg;
+  clearTimeout(stimer);
+  stimer = setTimeout(() => { el.className = 'savebadge'; }, 2500);
+}
+
+function save() {
+  try {
+    localStorage.setItem('mgk_v1', JSON.stringify({ T, nid }));
+    showBadge(true, 'Guardado ✓');
+  } catch (e) {
+    showBadge(false, 'Error al guardar');
+  }
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('mgk_v1');
+    if (raw) { const d = JSON.parse(raw); T = d.T || []; nid = d.nid || T.length + 1; }
+  } catch (e) { T = []; nid = 1; }
+  render();
+}
+
+function render() {
+  const cols = { pend: { el: 'colp', cnt: 'cp', sn: 'sn-p' }, prog: { el: 'coli', cnt: 'ci', sn: 'sn-i' }, done: { el: 'cold', cnt: 'cd', sn: 'sn-d' } };
+  Object.entries(cols).forEach(([s, { el, cnt, sn }]) => {
+    const vis = T.filter(t => t.status === s && (af === 'all' || t.cat === af));
+    const total = T.filter(t => t.status === s).length;
+    $(cnt).textContent = vis.length;
+    $(sn).textContent = total;
+    if (!vis.length) {
+      $(el).innerHTML = '<div class="empty-col">Sin gestiones<br>en esta columna</div>';
+      return;
+    }
+    $(el).innerHTML = vis.map(t => {
+      const dclass = dc(t.date);
+      const prev = s === 'prog' ? `<button class="mv" onclick="mv(${t.id},'pend')">← Pend.</button>` : s === 'done' ? `<button class="mv" onclick="mv(${t.id},'prog')">← Curso</button>` : '';
+      const next = s === 'pend' ? `<button class="mv" onclick="mv(${t.id},'prog')">Curso →</button>` : s === 'prog' ? `<button class="mv" onclick="mv(${t.id},'done')">Hecho →</button>` : '';
+      return `<div class="card" onclick="openM(${t.id})">
+        <div class="card-top"><span class="card-title">${t.title}</span><span class="catbadge ${CAT[t.cat].c}">${CAT[t.cat].l}</span></div>
+        ${t.notes ? `<div class="card-notes">${t.notes}</div>` : ''}
+        <div class="card-foot">
+          <span class="cdate ${dclass}">${t.date ? 'Límite: ' + fd(t.date) : ''}</span>
+          <div class="mvs" onclick="event.stopPropagation()">${prev}${next}</div>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function filt(f) {
+  af = f;
+  const map = { all: 'Todas', lab: 'Laboral', adm: 'Administrativo', ter: 'Terceros' };
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.toggle('on', b.textContent.trim() === map[f]));
+  render();
+}
+
+function openM(id) {
+  eid = id || null;
+  const t = id ? T.find(x => x.id === id) : null;
+  $('mtitle').textContent = id ? 'Editar gestión' : 'Nueva gestión';
+  $('ft').value = t ? t.title : '';
+  $('fc').value = t ? t.cat : 'lab';
+  $('fs').value = t ? t.status : 'pend';
+  $('fd').value = t ? t.date : '';
+  $('fn').value = t ? t.notes : '';
+  $('bdl').style.display = id ? '' : 'none';
+  $('ov').classList.add('open');
+  setTimeout(() => $('ft').focus(), 50);
+}
+function closeM() { $('ov').classList.remove('open'); eid = null; }
+function saveCard() {
+  const title = $('ft').value.trim();
+  if (!title) return $('ft').focus();
+  if (eid) {
+    const t = T.find(x => x.id === eid);
+    Object.assign(t, { title, cat: $('fc').value, status: $('fs').value, date: $('fd').value, notes: $('fn').value.trim() });
+  } else {
+    T.push({ id: nid++, title, cat: $('fc').value, status: $('fs').value, date: $('fd').value, notes: $('fn').value.trim() });
+  }
+  closeM(); render(); save();
+}
+function delCard() { T = T.filter(x => x.id !== eid); closeM(); render(); save(); }
+function mv(id, status) { T.find(x => x.id === id).status = status; render(); save(); }
+$('ov').addEventListener('click', e => { if (e.target === $('ov')) closeM(); });
+
+// PWA
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  $('pwa-bar').classList.add('show');
+});
+$('pwa-btn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') $('pwa-bar').classList.remove('show');
+  deferredPrompt = null;
+});
+window.addEventListener('appinstalled', () => $('pwa-bar').classList.remove('show'));
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+load();
+</script>
+</body>
+</html>
