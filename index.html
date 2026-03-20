@@ -149,6 +149,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .cat-add-btn{padding:7px 14px;border-radius:var(--radius);border:1px solid var(--amber);background:var(--amber-bg);color:var(--amber);cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;white-space:nowrap}
 .cat-add-btn:hover{background:rgba(232,192,125,0.2)}
 .cat-system-note{font-size:11px;color:var(--text3);margin-top:6px}
+/* Recurrence */
+.recur-badge{font-size:10px;padding:2px 6px;border-radius:20px;background:var(--blue-bg);color:var(--blue);font-weight:600;display:inline-flex;align-items:center;gap:3px;margin-left:4px}
+.recur-info{font-size:11px;color:var(--blue);margin-top:4px}
 /* Notification settings */
 .notif-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
 .notif-toggle-row:last-child{border-bottom:none}
@@ -259,6 +262,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       </select>
     </div>
     <div class="frow"><label>Fecha límite</label><input id="fd" type="date"></div>
+    <div class="frow"><label>Repetición</label>
+      <select id="fr">
+        <option value="">Sin repetición</option>
+        <option value="monthly">Mensual</option>
+        <option value="yearly">Anual</option>
+      </select>
+    </div>
     <div class="frow"><label>Notas / contexto</label><textarea id="fn" placeholder="Detalles, contacto, próximo paso..."></textarea></div>
     <div class="mbtns">
       <button class="bdl" id="bdl" style="display:none">Eliminar</button>
@@ -440,6 +450,52 @@ function subscribeToTasks(uid){
   });
 }
 
+// ── RECURRENCE ───────────────────────────────────────────────────────────────
+function nextRecurDate(dateStr, recur){
+  // dateStr = 'YYYY-MM-DD', recur = 'monthly'|'yearly'
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if(recur === 'monthly'){
+    // Advance one month, keep same day (capped to last day of new month)
+    let nm = m + 1, ny = y;
+    if(nm > 12){ nm = 1; ny++; }
+    const maxDay = new Date(ny, nm, 0).getDate();
+    return `${ny}-${String(nm).padStart(2,'0')}-${String(Math.min(d, maxDay)).padStart(2,'0')}`;
+  }
+  if(recur === 'yearly'){
+    // Advance one year, handle Feb 29 → Feb 28
+    const maxDay = new Date(y+1, m, 0).getDate();
+    return `${y+1}-${String(m).padStart(2,'0')}-${String(Math.min(d, maxDay)).padStart(2,'0')}`;
+  }
+  return dateStr;
+}
+
+async function handleMoveToDone(taskId){
+  const uid = auth.currentUser?.uid; if(!uid) return;
+  const task = T.find(t => t._id === taskId);
+  if(!task) return;
+
+  // Mark as done
+  await dbSave({status:'done'}, taskId);
+
+  // If recurring and has a date, auto-create next occurrence
+  if(task.recur && task.date){
+    const newDate = nextRecurDate(task.date, task.recur);
+    const newTask = {
+      title: task.title,
+      cat: task.cat,
+      status: 'pend',
+      date: newDate,
+      recur: task.recur,
+      notes: task.notes || '',
+      createdAt: Date.now()
+    };
+    try {
+      await addDoc(collection(db,'users',uid,'tasks'), newTask);
+      showBadge(true, `↺ Nueva repetición: ${fd(newDate)}`);
+    } catch(e){ showBadge(false,'Error al crear repetición'); }
+  }
+}
+
 async function dbSave(data, id){
   const uid = auth.currentUser?.uid; if(!uid) return;
   try {
@@ -482,7 +538,16 @@ function render(){
     c.addEventListener('click', e=>{ if(e.target.classList.contains('mv')) return; openM(c.dataset.id); });
   });
   document.querySelectorAll('.mv').forEach(b=>{
-    b.addEventListener('click', e=>{ e.stopPropagation(); dbSave({status:b.dataset.s}, b.dataset.id); });
+    b.addEventListener('click', e=>{
+      e.stopPropagation();
+      const targetStatus = b.dataset.s;
+      const taskId = b.dataset.id;
+      if(targetStatus === 'done'){
+        handleMoveToDone(taskId);
+      } else {
+        dbSave({status: targetStatus}, taskId);
+      }
+    });
   });
 }
 
@@ -516,6 +581,7 @@ function openM(id){
   $('fc').value = t?t.cat:(allCats()[0]?.id||'lab');
   $('fs').value = t?t.status:'pend';
   $('fd').value = t?t.date:'';
+  $('fr').value = t?t.recur||'':'';
   $('fn').value = t?t.notes:'';
   $('bdl').style.display = id?'':'none';
   $('ov').classList.add('open');
@@ -527,7 +593,7 @@ $('cancel-btn').onclick = closeM;
 $('ov').addEventListener('click', e=>{ if(e.target===$('ov')) closeM(); });
 $('save-btn').onclick = async () => {
   const title=$('ft').value.trim(); if(!title) return $('ft').focus();
-  const data={title, cat:$('fc').value, status:$('fs').value, date:$('fd').value, notes:$('fn').value.trim()};
+  const data={title, cat:$('fc').value, status:$('fs').value, date:$('fd').value, recur:$('fr').value, notes:$('fn').value.trim()};
   closeM(); await dbSave(data, eid);
 };
 $('bdl').onclick = async () => { const id=eid; closeM(); await dbDelete(id); };
