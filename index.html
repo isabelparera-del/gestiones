@@ -370,7 +370,12 @@ $('pwa-btn').addEventListener('click', async ()=>{
 });
 window.addEventListener('appinstalled', ()=>$('pwa-bar').classList.remove('show'));
 
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+// Desregistrar cualquier Service Worker previo para evitar conflictos con el login
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister());
+  });
+}
 </script>
 </body>
 </html>
