@@ -9,7 +9,36 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Gestiones">
-<link rel="manifest" href="manifest.json">
+<script>
+  const manifestData = {
+    name: "Mis Gestiones",
+    short_name: "Gestiones",
+    description: "Gestor personal de gestiones y trámites",
+    start_url: "/gestiones/",
+    scope: "/gestiones/",
+    display: "standalone",
+    background_color: "#0f0f1a",
+    theme_color: "#1a1a2e",
+    orientation: "portrait-primary",
+    icons: [
+      {
+        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231a1a2e'/%3E%3Crect x='28' y='56' width='44' height='80' rx='6' fill='%23e8c07d'/%3E%3Crect x='82' y='40' width='44' height='96' rx='6' fill='%2397c459'/%3E%3Crect x='136' y='68' width='44' height='68' rx='6' fill='%235dcaa5'/%3E%3C/svg%3E",
+        sizes: "192x192",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      },
+      {
+        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%231a1a2e'/%3E%3Crect x='72' y='148' width='118' height='216' rx='16' fill='%23e8c07d'/%3E%3Crect x='218' y='104' width='118' height='260' rx='16' fill='%2397c459'/%3E%3Crect x='364' y='180' width='118' height='184' rx='16' fill='%235dcaa5'/%3E%3C/svg%3E",
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+  const manifestURL = URL.createObjectURL(blob);
+  document.write('<link rel="manifest" href="' + manifestURL + '">');
+</script>
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231a1a2e'/%3E%3Crect x='28' y='56' width='44' height='80' rx='6' fill='%23e8c07d'/%3E%3Crect x='82' y='40' width='44' height='96' rx='6' fill='%2397c459'/%3E%3Crect x='136' y='68' width='44' height='68' rx='6' fill='%235dcaa5'/%3E%3C/svg%3E">
 <style>
 :root{--bg:#0f0f1a;--bg2:#1a1a2e;--surface:#1e1e35;--surface2:#252545;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);--text:#e8e8f0;--text2:#9090b0;--text3:#5a5a7a;--amber:#e8c07d;--amber-bg:rgba(232,192,125,0.12);--blue:#7eb8f7;--blue-bg:rgba(126,184,247,0.12);--green:#97c459;--green-bg:rgba(151,196,89,0.12);--teal:#5dcaa5;--teal-bg:rgba(93,202,165,0.12);--pink:#e88fa0;--pink-bg:rgba(232,143,160,0.12);--purple:#a78bfa;--purple-bg:rgba(167,139,250,0.12);--red:#f07070;--red-bg:rgba(240,112,112,0.12);--radius:10px;--radius-lg:14px}
